@@ -29,3 +29,17 @@ __declspec(naked) void codecave() {
         jmp ret_address
     }
 }
+
+BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved) {
+    DWORD old_protect;
+    unsigned char* hook_location = (unsigned char*)0x00CCAF8A;
+
+    if (fdwReason == DLL_PROCESS_ATTACH) {
+        VirtualProtect((void*)hook_location, 6, PAGE_EXECUTE_READWRITE, &old_protect);
+        *hook_location = 0xE9;
+        *(DWORD*)(hook_location + 1) = (DWORD)&codecave - ((DWORD)hook_location + 5);
+        *(hook_location + 5) = 0x90;
+    }
+
+    return true;
+}
